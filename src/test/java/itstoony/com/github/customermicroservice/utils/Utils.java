@@ -31,6 +31,7 @@ public class Utils {
                 .password("Fulano@123456")
                 .creationDate(LocalDate.now())
                 .lastModified(LocalDate.now())
+                .customer(null)
                 .build();
     }
 
