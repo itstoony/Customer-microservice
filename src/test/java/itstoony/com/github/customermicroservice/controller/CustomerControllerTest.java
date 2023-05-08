@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import itstoony.com.github.customermicroservice.dto.RegisteringCustomerDTO;
 import itstoony.com.github.customermicroservice.dto.RegisteringUserDTO;
+import itstoony.com.github.customermicroservice.dto.SearchingEmailRecord;
 import itstoony.com.github.customermicroservice.entity.Customer;
 import itstoony.com.github.customermicroservice.entity.Users;
 import itstoony.com.github.customermicroservice.service.CustomerService;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import static itstoony.com.github.customermicroservice.utils.Utils.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -128,7 +130,7 @@ class CustomerControllerTest {
 
         // execution
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(CUSTOMER_API.concat("/" + id))
+                .get(CUSTOMER_API.concat("/id/" + id))
                 .accept(MediaType.APPLICATION_JSON);
 
         // validation
@@ -160,13 +162,77 @@ class CustomerControllerTest {
 
         // execution
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(CUSTOMER_API.concat("/" + id))
+                .get(CUSTOMER_API.concat("/id/" + id))
                 .accept(MediaType.APPLICATION_JSON);
 
         // validation
         mvc
                 .perform(request)
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should find Customer by email")
+    void findByEmailTest() throws Exception {
+        // scenery
+        String email = "Fulano@email.com";
+        SearchingEmailRecord dto = new SearchingEmailRecord(email);
+
+        Customer customer = createCustomer();
+
+        given(customerService.findByEmail(anyString())).willReturn(Optional.of(customer));
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CUSTOMER_API.concat("/email"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(customer.getId()))
+                .andExpect(jsonPath("name").value(customer.getName()))
+                .andExpect(jsonPath("cpf").value(customer.getCpf()))
+                .andExpect(jsonPath("users.id").value(customer.getUsers().getId()))
+                .andExpect(jsonPath("users.email").value(customer.getUsers().getEmail()))
+                .andExpect(jsonPath("users.creationDate").value(customer.getUsers().getCreationDate().toString()))
+                .andExpect(jsonPath("users.lastModified").value(customer.getUsers().getLastModified().toString()))
+                .andExpect(jsonPath("address").value(customer.getAddress()))
+                .andExpect(jsonPath("zipcode").value(customer.getZipcode()))
+                .andExpect(jsonPath("cellPhone").value(customer.getCellPhone()))
+                .andExpect(jsonPath("creationDate").value(customer.getCreationDate().toString()))
+                .andExpect(jsonPath("lastModified").value(customer.getLastModified().toString()));
+    }
+
+    @Test
+    @DisplayName("Should return 404 not found when trying to find Customer by an invalid email")
+    void findByInvalidEmailTest() throws Exception {
+        // scenery
+        String email = "Fulano@email.com";
+        SearchingEmailRecord dto = new SearchingEmailRecord(email);
+
+        given(customerService.findByEmail(anyString())).willReturn(Optional.empty());
+
+        String json = new ObjectMapper().writeValueAsString(dto);
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CUSTOMER_API.concat("/email"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("errors", hasSize(1)));
+
     }
 
 }

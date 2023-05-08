@@ -1,7 +1,7 @@
 CREATE TABLE customer (
                           id SERIAL PRIMARY KEY,
                           name VARCHAR(255),
-                          cpf VARCHAR(11) UNIQUE,
+                          cpf VARCHAR(25) UNIQUE,
                           address VARCHAR(255),
                           zipcode VARCHAR(10),
                           cellphone VARCHAR(20),

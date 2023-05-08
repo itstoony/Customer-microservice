@@ -2,6 +2,7 @@ package itstoony.com.github.customermicroservice.controller;
 
 import itstoony.com.github.customermicroservice.dto.CustomerDTO;
 import itstoony.com.github.customermicroservice.dto.RegisteringCustomerDTO;
+import itstoony.com.github.customermicroservice.dto.SearchingEmailRecord;
 import itstoony.com.github.customermicroservice.entity.Customer;
 import itstoony.com.github.customermicroservice.service.CustomerService;
 import jakarta.validation.Valid;
@@ -34,10 +35,20 @@ public class CustomerController {
         return ResponseEntity.created(uri).body(customerDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<CustomerDTO> findByID(@PathVariable Long id) {
         Customer customer = customerService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by ID: " + id));
+
+        CustomerDTO customerDTO = modelMapper.map(customer, CustomerDTO.class);
+
+        return ResponseEntity.ok(customerDTO);
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<CustomerDTO> findByEmail(@RequestBody @Valid SearchingEmailRecord dto) {
+        Customer customer = customerService.findByEmail(dto.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by email "));
 
         CustomerDTO customerDTO = modelMapper.map(customer, CustomerDTO.class);
 

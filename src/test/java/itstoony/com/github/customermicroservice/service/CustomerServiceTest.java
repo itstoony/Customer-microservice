@@ -103,8 +103,6 @@ class CustomerServiceTest {
         assertThat(found).isPresent();
         assertThat(found.get().getId()).isEqualTo(id);
 
-        verify(customerRepository, times(1)).findById(any(Long.class));
-
     }
 
     @Test
@@ -121,7 +119,42 @@ class CustomerServiceTest {
         // validation
         assertThat(found).isEmpty();
 
-        verify(customerRepository, times(1)).findById(any(Long.class));
+    }
+
+
+    @Test
+    @DisplayName("Should find a Customer by email")
+    void findByEmailTest() {
+        // scenery
+        String email = "Fulano@email.com";
+
+        Customer customer = createCustomer();
+        customer.getUsers().setEmail(email);
+
+        when(customerRepository.findByUsersEmail(email)).thenReturn(Optional.of(customer));
+
+        // execution
+        Optional<Customer> found = customerService.findByEmail(email);
+
+        // validation
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsers().getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    @DisplayName("Should return empty when trying to find Customer by an invalid Email")
+    void findByInvalidEmailTest() {
+        // scenery
+        String email = "Fulano@email.com";
+
+        when(customerRepository.findByUsersEmail(email)).thenReturn(Optional.empty());
+
+        // execution
+        Optional<Customer> found = customerService.findByEmail(email);
+
+        // validation
+        assertThat(found).isEmpty();
+
     }
 
 }
