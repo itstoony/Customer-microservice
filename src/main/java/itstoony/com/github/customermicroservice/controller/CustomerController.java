@@ -2,16 +2,16 @@ package itstoony.com.github.customermicroservice.controller;
 
 import itstoony.com.github.customermicroservice.dto.CustomerDTO;
 import itstoony.com.github.customermicroservice.dto.RegisteringCustomerDTO;
+import itstoony.com.github.customermicroservice.dto.SearchingEmailRecord;
 import itstoony.com.github.customermicroservice.entity.Customer;
 import itstoony.com.github.customermicroservice.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -33,5 +33,25 @@ public class CustomerController {
                 .buildAndExpand(customerDTO.getId()).toUri();
 
         return ResponseEntity.created(uri).body(customerDTO);
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<CustomerDTO> findByID(@PathVariable Long id) {
+        Customer customer = customerService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by ID: " + id));
+
+        CustomerDTO customerDTO = modelMapper.map(customer, CustomerDTO.class);
+
+        return ResponseEntity.ok(customerDTO);
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<CustomerDTO> findByEmail(@RequestBody @Valid SearchingEmailRecord dto) {
+        Customer customer = customerService.findByEmail(dto.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by email "));
+
+        CustomerDTO customerDTO = modelMapper.map(customer, CustomerDTO.class);
+
+        return ResponseEntity.ok(customerDTO);
     }
 }

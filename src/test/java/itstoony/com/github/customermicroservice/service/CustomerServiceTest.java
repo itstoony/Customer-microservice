@@ -12,8 +12,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static itstoony.com.github.customermicroservice.utils.Utils.createRegisteringCustomerDTO;
-import static itstoony.com.github.customermicroservice.utils.Utils.createUsers;
+import java.util.Optional;
+
+import static itstoony.com.github.customermicroservice.utils.Utils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,4 +86,75 @@ class CustomerServiceTest {
 
         verify(customerRepository, never()).save(any(Customer.class));
     }
+
+    @Test
+    @DisplayName("Should find a Customer by ID")
+    void findByIDTest() {
+        // scenery
+        long id = 1L;
+        Customer customer = createCustomer();
+
+        when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
+
+        // execution
+        Optional<Customer> found = customerService.findById(id);
+
+        // validation
+        assertThat(found).isPresent();
+        assertThat(found.get().getId()).isEqualTo(id);
+
+    }
+
+    @Test
+    @DisplayName("Should return an empty Optional when trying to find Customer by invalid ID")
+    void findByInvalidIDTest(){
+        // scenery
+        long id = 1L;
+
+        when(customerRepository.findById(id)).thenReturn(Optional.empty());
+
+        // execution
+        Optional<Customer> found = customerService.findById(id);
+
+        // validation
+        assertThat(found).isEmpty();
+
+    }
+
+
+    @Test
+    @DisplayName("Should find a Customer by email")
+    void findByEmailTest() {
+        // scenery
+        String email = "Fulano@email.com";
+
+        Customer customer = createCustomer();
+        customer.getUsers().setEmail(email);
+
+        when(customerRepository.findByUsersEmail(email)).thenReturn(Optional.of(customer));
+
+        // execution
+        Optional<Customer> found = customerService.findByEmail(email);
+
+        // validation
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsers().getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    @DisplayName("Should return empty when trying to find Customer by an invalid Email")
+    void findByInvalidEmailTest() {
+        // scenery
+        String email = "Fulano@email.com";
+
+        when(customerRepository.findByUsersEmail(email)).thenReturn(Optional.empty());
+
+        // execution
+        Optional<Customer> found = customerService.findByEmail(email);
+
+        // validation
+        assertThat(found).isEmpty();
+
+    }
+
 }

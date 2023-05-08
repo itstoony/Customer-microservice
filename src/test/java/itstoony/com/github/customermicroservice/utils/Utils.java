@@ -40,7 +40,7 @@ public class Utils {
                 .id(1L)
                 .name("Fulano de tal")
                 .cpf("123.456.789-10")
-                .users(null)
+                .users(createUsers())
                 .address("Rua Example, 123")
                 .zipcode("45032-000")
                 .cellPhone("(21) 1234-5678")
