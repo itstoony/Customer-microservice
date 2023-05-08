@@ -12,8 +12,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static itstoony.com.github.customermicroservice.utils.Utils.createRegisteringCustomerDTO;
-import static itstoony.com.github.customermicroservice.utils.Utils.createUsers;
+import java.util.Optional;
+
+import static itstoony.com.github.customermicroservice.utils.Utils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,4 +86,42 @@ class CustomerServiceTest {
 
         verify(customerRepository, never()).save(any(Customer.class));
     }
+
+    @Test
+    @DisplayName("Should find a Customer by ID")
+    void findByIDTest() {
+        // scenery
+        long id = 1L;
+        Customer customer = createCustomer();
+
+        when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
+
+        // execution
+        Optional<Customer> found = customerService.findById(id);
+
+        // validation
+        assertThat(found).isPresent();
+        assertThat(found.get().getId()).isEqualTo(id);
+
+        verify(customerRepository, times(1)).findById(any(Long.class));
+
+    }
+
+    @Test
+    @DisplayName("Should return an empty Optional when trying to find Customer by invalid ID")
+    void findByInvalidIDTest(){
+        // scenery
+        long id = 1L;
+
+        when(customerRepository.findById(id)).thenReturn(Optional.empty());
+
+        // execution
+        Optional<Customer> found = customerService.findById(id);
+
+        // validation
+        assertThat(found).isEmpty();
+
+        verify(customerRepository, times(1)).findById(any(Long.class));
+    }
+
 }

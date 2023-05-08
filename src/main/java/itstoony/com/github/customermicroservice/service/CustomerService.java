@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +47,10 @@ public class CustomerService {
 
     private boolean existsByCpf(String cpf) {
         return customerRepository.existsByCpf(cpf);
+    }
+
+    public Optional<Customer> findById(Long id) {
+        return customerRepository.findById(id);
     }
 
 }

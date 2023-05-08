@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Optional;
+
 import static itstoony.com.github.customermicroservice.utils.Utils.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -112,6 +114,59 @@ class CustomerControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("errors", hasSize(10)));
 
+    }
+
+    @Test
+    @DisplayName("Should find customer by id")
+    void findByIdTest() throws Exception {
+        // scenery
+        long id = 1L;
+
+        Customer customer = createCustomer();
+
+        given(customerService.findById(any(Long.class))).willReturn(Optional.of(customer));
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CUSTOMER_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(customer.getId()))
+                .andExpect(jsonPath("name").value(customer.getName()))
+                .andExpect(jsonPath("cpf").value(customer.getCpf()))
+                .andExpect(jsonPath("users.id").value(customer.getUsers().getId()))
+                .andExpect(jsonPath("users.email").value(customer.getUsers().getEmail()))
+                .andExpect(jsonPath("users.creationDate").value(customer.getUsers().getCreationDate().toString()))
+                .andExpect(jsonPath("users.lastModified").value(customer.getUsers().getLastModified().toString()))
+                .andExpect(jsonPath("address").value(customer.getAddress()))
+                .andExpect(jsonPath("zipcode").value(customer.getZipcode()))
+                .andExpect(jsonPath("cellPhone").value(customer.getCellPhone()))
+                .andExpect(jsonPath("creationDate").value(customer.getCreationDate().toString()))
+                .andExpect(jsonPath("lastModified").value(customer.getLastModified().toString()));
 
     }
+
+    @Test
+    @DisplayName("Should return 404 not found when passed ID is invalid")
+    void findByInvalidIdTest() throws Exception {
+        // scenery
+        long id = 1L;
+
+        given(customerService.findById(any(Long.class))).willReturn(Optional.empty());
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CUSTOMER_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
+
 }
