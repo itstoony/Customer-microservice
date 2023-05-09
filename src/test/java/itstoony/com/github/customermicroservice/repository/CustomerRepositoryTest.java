@@ -1,11 +1,13 @@
 package itstoony.com.github.customermicroservice.repository;
 
 import itstoony.com.github.customermicroservice.entity.Customer;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -20,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomerRepositoryTest {
 
     @Autowired
-    UsersRepository usersRepository;
+    TestEntityManager entityManager;
 
     @Autowired
     CustomerRepository customerRepository;
@@ -33,10 +35,13 @@ class CustomerRepositoryTest {
         String email = "Fulano@email.com";
 
         Customer customer = createCustomer();
-        customer.getUsers().setEmail(email);
+        customer.setId(null);
 
-        usersRepository.save(customer.getUsers());
-        customerRepository.save(customer);
+        customer.getUsers().setEmail(email);
+        customer.getUsers().setId(null);
+
+        entityManager.persist(customer);
+        entityManager.persist(customer.getUsers());
 
         // execution
         Optional<Customer> found = customerRepository.findByUsersEmail(email);
