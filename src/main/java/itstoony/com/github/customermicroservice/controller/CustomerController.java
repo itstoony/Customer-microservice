@@ -6,6 +6,7 @@ import itstoony.com.github.customermicroservice.dto.SearchingEmailRecord;
 import itstoony.com.github.customermicroservice.entity.Customer;
 import itstoony.com.github.customermicroservice.service.CustomerService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class CustomerController {
         return ResponseEntity.created(uri).body(customerDTO);
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CustomerDTO> findByID(@PathVariable Long id) {
         Customer customer = customerService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by ID: " + id));
@@ -45,9 +46,9 @@ public class CustomerController {
         return ResponseEntity.ok(customerDTO);
     }
 
-    @GetMapping("/email")
-    public ResponseEntity<CustomerDTO> findByEmail(@RequestBody @Valid SearchingEmailRecord dto) {
-        Customer customer = customerService.findByEmail(dto.email())
+    @GetMapping(params = "email")
+    public ResponseEntity<CustomerDTO> findByEmail(@RequestParam("email") @Email String email) {
+        Customer customer = customerService.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found by email "));
 
         CustomerDTO customerDTO = modelMapper.map(customer, CustomerDTO.class);

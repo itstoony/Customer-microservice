@@ -176,20 +176,14 @@ class CustomerControllerTest {
     void findByEmailTest() throws Exception {
         // scenery
         String email = "Fulano@email.com";
-        SearchingEmailRecord dto = new SearchingEmailRecord(email);
 
         Customer customer = createCustomer();
 
         given(customerService.findByEmail(anyString())).willReturn(Optional.of(customer));
 
-        String json = new ObjectMapper().writeValueAsString(dto);
-
         // execution
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(CUSTOMER_API.concat("/email"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(json);
+                .get(CUSTOMER_API.concat("?email=" + email));
 
         // validation
         mvc
@@ -214,18 +208,12 @@ class CustomerControllerTest {
     void findByInvalidEmailTest() throws Exception {
         // scenery
         String email = "Fulano@email.com";
-        SearchingEmailRecord dto = new SearchingEmailRecord(email);
 
         given(customerService.findByEmail(anyString())).willReturn(Optional.empty());
 
-        String json = new ObjectMapper().writeValueAsString(dto);
-
         // execution
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(CUSTOMER_API.concat("/email"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(json);
+                .get(CUSTOMER_API.concat("?email=" + email));
 
         // validation
         mvc
@@ -233,6 +221,23 @@ class CustomerControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("errors", hasSize(1)));
 
+    }
+
+    @Test
+    @DisplayName("Should return Bad Request when sent email is not in valid format")
+    void findByInvalidFormatEmailTest() throws Exception {
+        // scenery
+        String email = "fulano";
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CUSTOMER_API.concat("?email=" + email));
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("errors", hasSize(1)));
     }
 
 }
